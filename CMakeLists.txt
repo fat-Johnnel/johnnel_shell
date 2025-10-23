@@ -6,6 +6,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(SRC_FILES
     src/main.cpp
+    src/build_in.cpp
 )
 
 
