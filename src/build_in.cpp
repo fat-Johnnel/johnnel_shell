@@ -50,3 +50,12 @@ void echo_command(string args){
     }
     cout<<endl;
 }
+
+pid_t Fork(void){
+    pid_t pid;
+    if((pid=fork())<0){
+        cerr<<"fork error"<<endl;
+        exit(1);
+    }
+    return pid;
+}

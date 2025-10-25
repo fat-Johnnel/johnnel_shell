@@ -1,1 +1,1 @@
-add_executable(ls_cmd ls_cmd.cpp)
+add_executable(ls ls_cmd.cpp)

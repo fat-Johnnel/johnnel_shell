@@ -1,6 +1,6 @@
 #ifndef BUILD_IN_H
 #define BUILD_IN_H
-#define COMMAND_PATH "/home/johnnel-wsl/codes/SimpleShell/bin/commands"
+#define COMMAND_PATH "${COMMAND_PATH}"
 /*
 echo
 exit
