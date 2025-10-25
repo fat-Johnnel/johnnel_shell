@@ -59,3 +59,20 @@ pid_t Fork(void){
     }
     return pid;
 }
+
+sighandler_t Signal(int signum, sighandler_t handler){
+    if(signal(signum,handler)==SIG_ERR){
+        cerr<<"无法设置处理函数"<<endl;
+        exit(1);
+    }
+    return handler;
+}
+
+int Tcsetpgrp(int fd,pid_t pgrp){
+    int rc;
+    if((rc=tcsetpgrp(fd,pgrp))<0){
+        cerr<<"终端控制权转移失败"<<endl;
+        exit(1);
+    }
+    return rc;
+}

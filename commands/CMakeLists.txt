@@ -1,1 +1,2 @@
 add_subdirectory(ls_cmd)
+add_subdirectory(test_cmd)

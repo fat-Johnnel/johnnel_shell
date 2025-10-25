@@ -1,6 +1,8 @@
 #include "build_in.h"
 #define BUFFER_SIZE 1024
 
+pid_t shell_pid;
+
 using namespace std;
 int main(int argc, char**argv){
     //>>>>>>>>>>>>>>>>>>>>>>>>>initilize<<<<<<<<<<<<<<<<<<<<<<
@@ -9,20 +11,28 @@ int main(int argc, char**argv){
     char command_path[BUFFER_SIZE];
     strcpy(command_path,COMMAND_PATH);
     setenv("COMMAND_PATH",command_path,1);
-
     vector<string> path_list;
     path_list.push_back(string(command_path));
+    shell_pid=getpid();
+
+    //为了实现对信号的处理，这里将shell的进程单独成一个组
+    setpgid(0,0); 
+    //设置信号处理(ctrl+c 和 ctrl+d)
+    Signal(SIGINT,SIG_IGN);
+    Signal(SIGTTOU, SIG_IGN);
     while(true){
         getcwd(current_path,BUFFER_SIZE);
-        printf("%s $",current_path);
-        fgets(reader,BUFFER_SIZE,stdin);
+        printf("%s $ ",current_path);
+        if(fgets(reader,BUFFER_SIZE,stdin)==NULL)
+        {
+            break;
+        }
         stringstream ss(reader);
         string command;
         ss >> command;
 
 
-        //为了实现对信号的处理，这里将shell的进程单独成一个组
-        setpgid(0,0); 
+
 
         //>>>>>>>>>>>>>>>>>>>build in command<<<<<<<<<<<<<<<<<<
         if(command=="echo"){
@@ -61,6 +71,8 @@ int main(int argc, char**argv){
         pid_t pid=Fork();
         int status;
         if(pid==0){
+            setpgid(0,0);
+            Signal(SIGINT,SIG_DFL);
             bool command_found=false;
             for(auto it=path_list.begin();it!=path_list.end();it++){
                 string full_path=*it+"/"+command;
@@ -82,7 +94,9 @@ int main(int argc, char**argv){
             exit(0);
         }
         else{
+            Tcsetpgrp(STDIN_FILENO,pid);
             waitpid(pid,&status,0);
+            Tcsetpgrp(STDIN_FILENO,getpgid(0));
         }
     }
     return 0;
