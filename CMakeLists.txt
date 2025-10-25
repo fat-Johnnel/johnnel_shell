@@ -9,5 +9,12 @@ set(SRC_FILES
     src/build_in.cpp
 )
 
-
+add_subdirectory(commands)
 add_executable(SimpleShell ${SRC_FILES})
+set(INSTALL_BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
+install(TARGETS SimpleShell DESTINATION ${INSTALL_BIN_DIR})
+
+install(TARGETS 
+    ls_cmd 
+DESTINATION ${INSTALL_BIN_DIR}/commands)
+
