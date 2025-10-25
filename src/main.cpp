@@ -27,88 +27,139 @@ int main(int argc, char**argv){
         {
             break;
         }
-        stringstream ss(reader);
-        string command;
-        ss >> command;
 
-
-        //>>>>>>>>>>>>>>>>>>>build in command<<<<<<<<<<<<<<<<<<
-        if(command=="echo"){
-            string arg=ss.str().substr(5);
-            echo_command(arg);
-            continue;
-        }
-
-        else if(command=="exit"){
-            break;
-        }
-
-        else if(command=="pwd"){
-            char pwd_buffer[BUFFER_SIZE];
-            getcwd(pwd_buffer,BUFFER_SIZE);
-            cout<<pwd_buffer<<endl;
-            continue;
-        }
-
-        else if(command=="cd"){
-            string path;
-            ss >> path;
-            if(path.empty()){
-                if(chdir(getenv("HOME"))!=0){
-                    cerr<<"cannot open home directoty"<<endl;
-                }
+        //管道切分
+        vector<stringstream> pcommands;
+        int command_count=1;
+        string reader_str(reader);
+        string::iterator pre=reader_str.begin();
+        string::iterator it=reader_str.begin();
+        while(it!=reader_str.end()){
+            if(*it=='|'){
+                string one_command(pre,it);
+                pcommands.push_back(stringstream(one_command));
+                command_count++;
+                pre=it+1;
             }
-            else{
-                if(chdir(path.c_str())!=0){
-                    cerr<<"no such file or directory: "<<path<<endl;
-                }
-            }
-            continue;
+            it++;
         }
-        //>>>>>>>>>>>>>>>>>>>>>>external command<<<<<<<<<<<<<<<<<<
-        pid_t pid=Fork();
+        string one_command(pre,it);
+        pcommands.push_back(stringstream(one_command));
+        pid_t * pids=(pid_t*)malloc(sizeof(pid_t)*command_count);
+
+
+        pid_t first_pid=-1;
+        pid_t pid=-1;
+        int (*pipefd)[2]=(int (*)[2])malloc(sizeof(int[2])*(command_count-1));
         int status;
-        if(pid==0){
-            setpgid(0,0);
-            Signal(SIGINT,SIG_DFL);
-            bool command_found=false;
-            
-            vector<char*> args;
-            char * pushed=(char*)malloc(sizeof(char)*BUFFER_SIZE);
-            strcpy(pushed,command.c_str());
-            args.push_back(pushed);
-            string arg;
-            while(ss >> arg){
-                pushed=(char*)malloc(sizeof(char)*BUFFER_SIZE);
-                strcpy(pushed,arg.c_str());
-                args.push_back(pushed);
-            }
-            args.push_back(nullptr);
+        int pre_fd=STDIN_FILENO;
+        for(int i=1;i<=command_count;i++){
 
-            for(auto it=path_list.begin();it!=path_list.end();it++){
-                string full_path=*it+"/"+command;
-                if(execv(full_path.c_str(),args.data())>=0){
-                    command_found=true;
+            
+
+            if(pid!=0){
+                if(i!=command_count){
+                    Pipe(pipefd[i-1]);
+                }
+                pid=Fork();
+                
+            }
+            if(pid==0){
+                Signal(SIGINT,SIG_DFL);
+                stringstream &ss=pcommands[i-1];
+                string command;
+                ss >> command;
+                if(i!=1){
+                    dup2(pipefd[i-2][0],STDIN_FILENO);
+                    close(pipefd[i-2][0]);
+                    close(pipefd[i-2][1]);
+                }
+                if(i!=command_count){
+                    dup2(pipefd[i-1][1],STDOUT_FILENO);
+                    close(pipefd[i-1][0]);
+                    close(pipefd[i-1][1]);
+                }
+                //>>>>>>>>>>>>>>>>>>>build in command<<<<<<<<<<<<<<<<<<
+                if(command=="echo"){
+                    string arg=ss.str().substr(5);
+                    echo_command(arg);
+                    continue;
+                }
+
+                else if(command=="exit"){
                     break;
                 }
 
-            }
+                else if(command=="pwd"){
+                    char pwd_buffer[BUFFER_SIZE];
+                    getcwd(pwd_buffer,BUFFER_SIZE);
+                    cout<<pwd_buffer<<endl;
+                    continue;
+                }
 
-            for(auto arg_it=args.begin();arg_it!=args.end();arg_it++){
-                if(*arg_it!=nullptr)
-                    free(*arg_it);
-            }
+                else if(command=="cd"){
+                    string path;
+                    ss >> path;
+                    if(path.empty()){
+                        if(chdir(getenv("HOME"))!=0){
+                            cerr<<"cannot open home directoty"<<endl;
+                        }
+                    }
+                    else{
+                        if(chdir(path.c_str())!=0){
+                            cerr<<"no such file or directory: "<<path<<endl;
+                        }
+                    }
+                    continue;
+                }
+                //>>>>>>>>>>>>>>>>>>>>>>external command<<<<<<<<<<<<<<<<<<
+            
+                bool command_found=false;
+                
+                vector<char*> args;
+                char * pushed=(char*)malloc(sizeof(char)*BUFFER_SIZE);
+                strcpy(pushed,command.c_str());
+                args.push_back(pushed);
+                string arg;
+                while(ss >> arg){
+                    pushed=(char*)malloc(sizeof(char)*BUFFER_SIZE);
+                    strcpy(pushed,arg.c_str());
+                    args.push_back(pushed);
+                }
+                args.push_back(nullptr);
 
-            if(!command_found){
-                cerr<<"command not found: "<<command<<endl;
+                for(auto it=path_list.begin();it!=path_list.end();it++){
+                    string full_path=*it+"/"+command;
+                    if(execv(full_path.c_str(),args.data())>=0){
+                        command_found=true;
+                        break;
+                    }
+
+                }
+
+                for(auto arg_it=args.begin();arg_it!=args.end();arg_it++){
+                    if(*arg_it!=nullptr)
+                        free(*arg_it);
+                }
+
+                if(!command_found){
+                    cerr<<"command not found: "<<command<<endl;
+                }
+                exit(0);
             }
-            exit(0);
+            else{
+
+                pids[i-1]=pid;
+                setpgid(pid,pids[0]);
+
+                if(i==1)
+                    Tcsetpgrp(STDIN_FILENO,pid);
+            }
         }
-        else{
-            Tcsetpgrp(STDIN_FILENO,pid);
-            waitpid(pid,&status,0);
-            Tcsetpgrp(STDIN_FILENO,getpgid(0));
+        for(int i=0;i<command_count;i++){
+            waitpid(pids[i],&status,0);
         }
+        Tcsetpgrp(STDIN_FILENO,getpgid(0));
     }
     return 0;
 }

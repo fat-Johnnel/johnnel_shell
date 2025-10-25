@@ -76,3 +76,12 @@ int Tcsetpgrp(int fd,pid_t pgrp){
     }
     return rc;
 }
+
+int Pipe(int pipefd[2]){
+    int rc;
+    if((rc=pipe(pipefd))<0){
+        cerr<<"管道创建失败"<<endl;
+        exit(1);
+    }
+    return rc;
+}

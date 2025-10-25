@@ -7,7 +7,6 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 set(SRC_FILES
     src/main.cpp
     src/build_in.cpp
-    src/external_wrapper.cpp
 )
 set (COMMAND_PATH "${CMAKE_SOURCE_DIR}/bin/commands")                                 
 configure_file(
