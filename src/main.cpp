@@ -32,8 +32,6 @@ int main(int argc, char**argv){
         ss >> command;
 
 
-
-
         //>>>>>>>>>>>>>>>>>>>build in command<<<<<<<<<<<<<<<<<<
         if(command=="echo"){
             string arg=ss.str().substr(5);
@@ -74,20 +72,33 @@ int main(int argc, char**argv){
             setpgid(0,0);
             Signal(SIGINT,SIG_DFL);
             bool command_found=false;
+            
+            vector<char*> args;
+            char * pushed=(char*)malloc(sizeof(char)*BUFFER_SIZE);
+            strcpy(pushed,command.c_str());
+            args.push_back(pushed);
+            string arg;
+            while(ss >> arg){
+                pushed=(char*)malloc(sizeof(char)*BUFFER_SIZE);
+                strcpy(pushed,arg.c_str());
+                args.push_back(pushed);
+            }
+            args.push_back(nullptr);
+
             for(auto it=path_list.begin();it!=path_list.end();it++){
                 string full_path=*it+"/"+command;
-                vector<char*> args_vector;
-                args_vector.push_back(const_cast<char*>(command.c_str()));
-                string arg;
-                while(ss >> arg){
-                    args_vector.push_back(const_cast<char*>(arg.c_str()));
-                }
-                args_vector.push_back(nullptr);
-                if(execv(full_path.c_str(),args_vector.data())>=0){
+                if(execv(full_path.c_str(),args.data())>=0){
                     command_found=true;
                     break;
                 }
+
             }
+
+            for(auto arg_it=args.begin();arg_it!=args.end();arg_it++){
+                if(*arg_it!=nullptr)
+                    free(*arg_it);
+            }
+
             if(!command_found){
                 cerr<<"command not found: "<<command<<endl;
             }
