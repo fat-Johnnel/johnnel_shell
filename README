@@ -1,3 +1,18 @@
+# This is a simple shell
+
+## 项目结构
+```
+SimpleShell
+-bin/           可执行文件，SimpleShell_main在这个文件夹下
+|   |-commands/  存放外部命令
+|   |-SimpleShell_main 主程序
+|
+-commands/      存放外部命令的源文件
+-include/       头文件
+-src/           shell程序的源文件
+-CMakeLists.txt
+```
+
 ## 已经实现的功能
 #### 交互
 1. 输入命令
