@@ -18,6 +18,13 @@ pwd
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
+
+#define BUFFER_SIZE 1024
+
 void echo_command(std::string args);
 pid_t Fork(void);
 sighandler_t Signal(int signum, sighandler_t handler);

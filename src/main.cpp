@@ -1,5 +1,4 @@
 #include "build_in.h"
-#define BUFFER_SIZE 1024
 
 pid_t shell_pid;
 
@@ -54,21 +53,37 @@ int main(int argc, char**argv){
         int status;
         int pre_fd=STDIN_FILENO;
         for(int i=1;i<=command_count;i++){
-
-            
-
+            stringstream &ss=pcommands[i-1];
+            string command;
+            ss >> command;
             if(pid!=0){
                 if(i!=command_count){
                     Pipe(pipefd[i-1]);
                 }
-                pid=Fork();
+
+                //执行cd
+                
+                if(command=="cd"){
+                    string path;
+                    ss >> path;
+                    if(path.empty() || path=="~"){
+                        if(chdir(getenv("HOME"))!=0){
+                            cerr<<"cannot open home directoty"<<endl;
+                        }
+                    }
+                    else{
+                        if(chdir(path.c_str())!=0){
+                            cerr<<"no such file or directory: "<<path<<endl;
+                        }
+                    }
+                    break;
+                }
+                else
+                    pid=Fork();
                 
             }
             if(pid==0){
                 Signal(SIGINT,SIG_DFL);
-                stringstream &ss=pcommands[i-1];
-                string command;
-                ss >> command;
                 if(i!=1){
                     dup2(pipefd[i-2][0],STDIN_FILENO);
                     close(pipefd[i-2][0]);
@@ -83,35 +98,18 @@ int main(int argc, char**argv){
                 if(command=="echo"){
                     string arg=ss.str().substr(5);
                     echo_command(arg);
-                    continue;
                 }
 
                 else if(command=="exit"){
-                    break;
+                    exit(2);
                 }
 
                 else if(command=="pwd"){
                     char pwd_buffer[BUFFER_SIZE];
                     getcwd(pwd_buffer,BUFFER_SIZE);
                     cout<<pwd_buffer<<endl;
-                    continue;
                 }
 
-                else if(command=="cd"){
-                    string path;
-                    ss >> path;
-                    if(path.empty()){
-                        if(chdir(getenv("HOME"))!=0){
-                            cerr<<"cannot open home directoty"<<endl;
-                        }
-                    }
-                    else{
-                        if(chdir(path.c_str())!=0){
-                            cerr<<"no such file or directory: "<<path<<endl;
-                        }
-                    }
-                    continue;
-                }
                 //>>>>>>>>>>>>>>>>>>>>>>external command<<<<<<<<<<<<<<<<<<
             
                 bool command_found=false;
@@ -156,10 +154,17 @@ int main(int argc, char**argv){
                     Tcsetpgrp(STDIN_FILENO,pid);
             }
         }
+        bool exit_flag=false;
         for(int i=0;i<command_count;i++){
             waitpid(pids[i],&status,0);
+            if(WEXITSTATUS(status)==2){
+                exit_flag=true;
+            }
         }
         Tcsetpgrp(STDIN_FILENO,getpgid(0));
+        if(exit_flag){
+            break;
+        }
     }
     return 0;
 }
