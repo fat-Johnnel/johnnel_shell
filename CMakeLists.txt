@@ -25,6 +25,7 @@ install(TARGETS SimpleShell_main DESTINATION ${INSTALL_BIN_DIR})
 install(TARGETS 
     ls 
     test_cmd
+    cat
     DESTINATION ${INSTALL_BIN_DIR}/commands
 )
 

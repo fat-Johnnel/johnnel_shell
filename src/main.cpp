@@ -62,7 +62,6 @@ int main(int argc, char**argv){
                 }
 
                 //执行cd
-                
                 if(command=="cd"){
                     string path;
                     ss >> path;
