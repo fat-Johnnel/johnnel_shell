@@ -1,0 +1,1 @@
+add_executable(xargs xargs_cmd.cpp)

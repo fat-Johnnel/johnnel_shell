@@ -22,6 +22,7 @@ pwd
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
+#include <limits.h>
 
 #define BUFFER_SIZE 1024
 

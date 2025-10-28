@@ -26,6 +26,7 @@ install(TARGETS
     ls 
     test_cmd
     cat
+    xargs
     DESTINATION ${INSTALL_BIN_DIR}/commands
 )
 
