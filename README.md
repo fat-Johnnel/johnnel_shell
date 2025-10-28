@@ -27,5 +27,5 @@ SimpleShell
 1. 程序内部有一个COMMAND_PATH，日后将实现往COMMAND_PATH中添加路径
     ls(-l -a \[PATH\])
     cat(- -n filename)
-
+2. xargs(-n \[utililty\[args...\]\])
 
