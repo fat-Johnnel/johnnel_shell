@@ -27,6 +27,7 @@ install(TARGETS
     test_cmd
     cat
     xargs
+    touch
     DESTINATION ${INSTALL_BIN_DIR}/commands
 )
 
