@@ -23,6 +23,8 @@ pwd
 #include <pwd.h>
 #include <grp.h>
 #include <limits.h>
+#include <fcntl.h>
+#include <utime.h>
 
 #define BUFFER_SIZE 1024
 
