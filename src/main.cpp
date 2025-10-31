@@ -13,6 +13,17 @@ int main(int argc, char**argv){
     vector<string> path_list;
     path_list.push_back(string(command_path));
     shell_pid=getpid();
+    char username[BUFFER_SIZE];
+    char hostname[BUFFER_SIZE];
+    getlogin_r(username,BUFFER_SIZE);
+    struct passwd * pw=getpwuid(getuid());
+    if(pw!=NULL){
+        strcpy(username,pw->pw_name);
+    }
+    else {
+        strcpy(username,"unknown");
+    }
+    gethostname(hostname,BUFFER_SIZE);
 
     //为了实现对信号的处理，这里将shell的进程单独成一个组
     setpgid(0,0); 
@@ -20,8 +31,9 @@ int main(int argc, char**argv){
     Signal(SIGINT,SIG_IGN);
     Signal(SIGTTOU, SIG_IGN);
     while(true){
+        string current_time=gettime();
         getcwd(current_path,BUFFER_SIZE);
-        printf("%s $ ",current_path);
+        printf("%s@%s %s %s $ ",username,hostname,current_path,current_time.c_str());
         if(fgets(reader,BUFFER_SIZE,stdin)==NULL)
         {
             break;

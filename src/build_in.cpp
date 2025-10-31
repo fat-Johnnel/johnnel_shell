@@ -85,3 +85,10 @@ int Pipe(int pipefd[2]){
     }
     return rc;
 }
+string gettime(){
+    time_t now=time(nullptr);
+    struct tm * t=localtime(&now);
+    char buffer[BUFFER_SIZE];
+    strftime(buffer,BUFFER_SIZE,"%m-%d %H:%M",t);
+    return string(buffer);
+}

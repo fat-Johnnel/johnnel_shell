@@ -33,4 +33,5 @@ pid_t Fork(void);
 sighandler_t Signal(int signum, sighandler_t handler);
 int Tcsetpgrp(int fd,pid_t pgrp);
 int Pipe(int pipefd[2]);
+std::string gettime();
 #endif
