@@ -28,6 +28,7 @@ install(TARGETS
     cat
     xargs
     touch
+    mkdir
     DESTINATION ${INSTALL_BIN_DIR}/commands
 )
 

@@ -28,4 +28,6 @@ SimpleShell
     ls(-l -a \[PATH\])
     cat(- -n filename)
 2. xargs(-n \[utililty\[args...\]\])
+3. touch
+4. mkdir
 
