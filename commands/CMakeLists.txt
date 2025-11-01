@@ -1,6 +1,12 @@
+add_library(file_operation STATIC ${CMAKE_CURRENT_SOURCE_DIR}/file_source/fileOp.cpp)
+target_include_directories(file_operation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(file_operation PUBLIC build_in_basic)
+
 add_subdirectory(ls_cmd)
 add_subdirectory(test_cmd)
 add_subdirectory(cat_cmd)
 add_subdirectory(xargs_cmd)
 add_subdirectory(touch_cmd)
 add_subdirectory(mkdir_cmd)
+add_subdirectory(cp_cmd)
+target_include_directories(cp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

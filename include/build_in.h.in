@@ -37,4 +37,5 @@ int Tcsetpgrp(int fd,pid_t pgrp);
 int Pipe(int pipefd[2]);
 std::string gettime();
 int export_cmd(std::string arg,char *command_path);
+int Stat(const char *pathname, struct stat *statbuf);
 #endif

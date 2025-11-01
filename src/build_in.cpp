@@ -111,3 +111,13 @@ int export_cmd(string arg,char * command_path){
         return 1;
     }
 }
+
+
+int Stat(const char *pathname, struct stat *statbuf){
+    int rc;
+    if((rc=stat(pathname,statbuf))<0){
+        cerr<<"获取文件状态失败："<<pathname<<endl;
+        exit(1);
+    }
+    return rc;
+}
