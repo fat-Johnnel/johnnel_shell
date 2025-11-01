@@ -30,7 +30,6 @@ int main(int argc, char**argv){
     Signal(SIGTTOU, SIG_IGN);
     while(true){
         strcpy(command_path,getenv("COMMAND_PATH"));
-        cout<<command_path<<endl;
         int index=0;
         vector<string> path_list;
         for(int i=0;i<strlen(command_path);i++){

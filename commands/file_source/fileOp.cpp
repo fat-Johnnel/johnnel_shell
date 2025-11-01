@@ -26,9 +26,9 @@ void copy_file(const char * src,const char * dest)
         }
     int dest_fd=open(dest_copy,O_WRONLY|O_CREAT|O_TRUNC,0644);
     if(dest_fd<0){
-        cerr<<"cannot open destination file: "<<dest_copy<<endl;
+        cerr<<"cannot open destination file: "<<dest_copy<<" skipping "<<endl;
         close(src_fd);
-        exit(1);
+        return;
     }
     char buffer[BUFFER_SIZE];
     ssize_t bytes_read;
@@ -102,3 +102,38 @@ void copy_recursive(const char * src,const char * dest){
     }
 }
 
+int rm_recursive(const char * path){
+    struct stat st;
+    Stat(path,&st);
+    if(S_ISREG(st.st_mode))
+    {
+        if(remove(path)<0){
+            perror("删除文件失败");
+            return -1;
+        }
+    }
+    else if(S_ISDIR(st.st_mode)){
+        DIR *dir=opendir(path);
+        if(dir==NULL){
+            perror("无法打开目录");
+            return -1;
+        }
+        struct dirent * dp;
+        while((dp=readdir(dir))!=NULL){
+            if(strcmp(dp->d_name,".")==0 || strcmp(dp->d_name,"..")==0){
+                continue;
+            }
+            string child_path=string(path)+"/"+string(dp->d_name);
+            if(rm_recursive(child_path.c_str())<0){
+                closedir(dir);
+                return -1;
+            }
+        }
+        closedir(dir);
+        if(rmdir(path)<0){
+            perror("删除目录失败");
+            return -1;
+        }
+    }
+    return 0;
+}

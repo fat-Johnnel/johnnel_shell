@@ -35,6 +35,7 @@ install(TARGETS
     touch
     mkdir
     cp
+    rm
     DESTINATION ${INSTALL_BIN_DIR}/commands
 )
 
