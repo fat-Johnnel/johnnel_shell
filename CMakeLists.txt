@@ -17,6 +17,9 @@ configure_file(
 
 add_subdirectory(commands)
 add_executable(SimpleShell_main ${SRC_FILES})
+
+target_link_libraries(SimpleShell_main readline)
+
 set(INSTALL_BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
 
 

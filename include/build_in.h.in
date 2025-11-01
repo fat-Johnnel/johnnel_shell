@@ -25,7 +25,9 @@ pwd
 #include <limits.h>
 #include <fcntl.h>
 #include <utime.h>
-
+#include <regex>
+#include <readline/readline.h>
+#include <readline/history.h>
 #define BUFFER_SIZE 1024
 
 void echo_command(std::string args);
@@ -34,4 +36,5 @@ sighandler_t Signal(int signum, sighandler_t handler);
 int Tcsetpgrp(int fd,pid_t pgrp);
 int Pipe(int pipefd[2]);
 std::string gettime();
+int export_cmd(std::string arg,char *command_path);
 #endif

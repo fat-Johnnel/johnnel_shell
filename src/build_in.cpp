@@ -48,7 +48,6 @@ void echo_command(string args){
         }
         it++;
     }
-    cout<<endl;
 }
 
 pid_t Fork(void){
@@ -91,4 +90,24 @@ string gettime(){
     char buffer[BUFFER_SIZE];
     strftime(buffer,BUFFER_SIZE,"%m-%d %H:%M",t);
     return string(buffer);
+}
+
+int export_cmd(string arg,char * command_path){
+    regex path_pattern(R"(^COMMAND_PATH=\$COMMAND_PATH:(.*)$)");
+    smatch match;
+    if(regex_match(arg,match,path_pattern)){
+        string new_path=match[1];
+        if(command_path[strlen(command_path)-1]==':'){
+            strcat(command_path,new_path.c_str());
+        }
+        else{
+            strcat(command_path,":");
+            strcat(command_path,new_path.c_str());
+        }
+        return 0;
+    }
+    else{
+        cerr<<"export格式错误"<<endl;
+        return 1;
+    }
 }

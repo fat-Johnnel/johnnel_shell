@@ -5,13 +5,13 @@ pid_t shell_pid;
 using namespace std;
 int main(int argc, char**argv){
     //>>>>>>>>>>>>>>>>>>>>>>>>>initilize<<<<<<<<<<<<<<<<<<<<<<
-    char *reader=(char*)malloc(sizeof(char)*BUFFER_SIZE);
+    char *reader;
     char current_path[BUFFER_SIZE];
     char command_path[BUFFER_SIZE];
     strcpy(command_path,COMMAND_PATH);
     setenv("COMMAND_PATH",command_path,1);
-    vector<string> path_list;
-    path_list.push_back(string(command_path));
+    // vector<string> path_list;
+    // path_list.push_back(string(command_path));
     shell_pid=getpid();
     char username[BUFFER_SIZE];
     char hostname[BUFFER_SIZE];
@@ -31,10 +31,22 @@ int main(int argc, char**argv){
     Signal(SIGINT,SIG_IGN);
     Signal(SIGTTOU, SIG_IGN);
     while(true){
+        strcpy(command_path,getenv("COMMAND_PATH"));
+        cout<<command_path<<endl;
+        int index=0;
+        vector<string> path_list;
+        for(int i=0;i<strlen(command_path);i++){
+            if(command_path[i]==':'){
+                path_list.push_back(string(command_path+index,command_path+i));
+                index=i+1;
+            }
+        }
+        path_list.push_back(string(command_path+index,command_path+strlen(command_path)));
+
         string current_time=gettime();
         getcwd(current_path,BUFFER_SIZE);
-        printf("%s@%s %s %s $ ",username,hostname,current_path,current_time.c_str());
-        if(fgets(reader,BUFFER_SIZE,stdin)==NULL)
+        printf("%s@%s %s %s ",username,hostname,current_path,current_time.c_str());
+        if((reader=readline("$ "))==NULL)
         {
             break;
         }
@@ -43,6 +55,7 @@ int main(int argc, char**argv){
         vector<stringstream> pcommands;
         int command_count=1;
         string reader_str(reader);
+        free(reader);
         string::iterator pre=reader_str.begin();
         string::iterator it=reader_str.begin();
         while(it!=reader_str.end()){
@@ -125,6 +138,7 @@ int main(int argc, char**argv){
             continue;
         }
 
+        
         pid_t first_pid=-1;
         pid_t pid=-1;
         int (*pipefd)[2]=(int (*)[2])malloc(sizeof(int[2])*(command_count-1));
@@ -153,6 +167,13 @@ int main(int argc, char**argv){
                             cerr<<"no such file or directory: "<<path<<endl;
                         }
                     }
+                    break;
+                }
+                else if(command=="export"){
+                    string var;
+                    ss>>var;
+                    export_cmd(var,command_path);
+                    setenv("COMMAND_PATH",command_path,1);
                     break;
                 }
                 else
@@ -187,7 +208,7 @@ int main(int argc, char**argv){
                 }
 
                 else if(command=="exit"){
-                    exit(2);
+                    exit(-2);
                 }
 
                 else if(command=="pwd"){
@@ -196,6 +217,15 @@ int main(int argc, char**argv){
                     cout<<pwd_buffer<<endl;
                     exit(0);
                 }
+
+                else if(command=="sleep"){
+                    float sleep_time;
+                    ss >> sleep_time;
+                    usleep((useconds_t)(sleep_time*1000000));
+                    exit(0);
+                }
+
+                
 
                 //>>>>>>>>>>>>>>>>>>>>>>external command<<<<<<<<<<<<<<<<<<
             
@@ -252,7 +282,7 @@ int main(int argc, char**argv){
         bool exit_flag=false;
         for(int i=0;i<command_count;i++){
             waitpid(pids[i],&status,0);
-            if(WEXITSTATUS(status)==2){
+            if(WEXITSTATUS(status)==-2){
                 exit_flag=true;
             }
         }
