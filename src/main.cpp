@@ -10,8 +10,6 @@ int main(int argc, char**argv){
     char command_path[BUFFER_SIZE];
     strcpy(command_path,COMMAND_PATH);
     setenv("COMMAND_PATH",command_path,1);
-    // vector<string> path_list;
-    // path_list.push_back(string(command_path));
     shell_pid=getpid();
     char username[BUFFER_SIZE];
     char hostname[BUFFER_SIZE];
@@ -138,9 +136,26 @@ int main(int argc, char**argv){
             continue;
         }
 
+        //是否后台运行
+        vector<bool> is_back_ground(command_count,false);
+        for(int i=0;i<command_count;i++){
+            stringstream &ss=pcommands[i];
+            string command_line=ss.str();
+            for(auto it:command_line){
+                if(it=='&'){
+                    is_back_ground[i]=true;
+                    auto new_end=remove(command_line.begin(),command_line.end(),'&');
+                    command_line.erase(new_end,command_line.end());
+                    pcommands[i].str(command_line);
+                    pcommands[i].clear();
+                    break;
+                }
+            }
+        }
         
         pid_t first_pid=-1;
         pid_t pid=-1;
+        pid_t back_gpid=-1;
         int (*pipefd)[2]=(int (*)[2])malloc(sizeof(int[2])*(command_count-1));
         int status;
         int pre_fd=STDIN_FILENO;
@@ -266,13 +281,24 @@ int main(int argc, char**argv){
                     close(dfd[1]);
                 exit(0);
             }
-            else{
-
+            else{  
+                if(!is_back_ground[i-1]){
+                    if(first_pid==-1)
+                    {
+                        first_pid=pid;
+                        setpgid(pid,first_pid);
+                        Tcsetpgrp(STDIN_FILENO,pid);
+                    }
+                    else setpgid(pid,first_pid);
+                }
+                else{
+                    if(back_gpid==-1){
+                        back_gpid=pid;
+                    }
+                    setpgid(pid,back_gpid);
+                }
                 pids[i-1]=pid;
-                setpgid(pid,pids[0]);
-
-                if(i==1)
-                    Tcsetpgrp(STDIN_FILENO,pid);
+                
             }
         }
         for(int i=0;i<command_count-1;i++){
@@ -281,7 +307,8 @@ int main(int argc, char**argv){
         }
         bool exit_flag=false;
         for(int i=0;i<command_count;i++){
-            waitpid(pids[i],&status,0);
+            if(!is_back_ground[i])
+                waitpid(pids[i],&status,0);
             if(WEXITSTATUS(status)==-2){
                 exit_flag=true;
             }
