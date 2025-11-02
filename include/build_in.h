@@ -30,6 +30,12 @@ pwd
 #include <readline/history.h>
 #define BUFFER_SIZE 1024
 
+struct arg_parse{
+    int options[48];
+    std::vector<std::string> args;
+};
+
+
 void echo_command(std::string args);
 pid_t Fork(void);
 sighandler_t Signal(int signum, sighandler_t handler);
@@ -38,4 +44,7 @@ int Pipe(int pipefd[2]);
 std::string gettime();
 int export_cmd(std::string arg,char *command_path);
 int Stat(const char *pathname, struct stat *statbuf);
+int arg_parser(struct arg_parse * result,int argc,char **argv);
+int letter_mapping(char c);
+char demapping_letter(int index);
 #endif

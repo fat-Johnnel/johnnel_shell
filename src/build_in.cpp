@@ -121,3 +121,45 @@ int Stat(const char *pathname, struct stat *statbuf){
     }
     return rc;
 }
+
+int letter_mapping(char c){
+    if(c>='a' && c<='z'){
+        return c-'a';
+    }
+    else if(c>='A' && c<='Z'){
+        return c-'A'+26;
+    }
+    else{
+        return -1;
+    }
+}
+char demapping_letter(int index){
+    if(index>=0 && index<=25){
+        return 'a'+index;
+    }
+    else if(index>=26 && index<=51){
+        return 'A'+(index-26);
+    }
+    return 0;
+}
+
+
+int arg_parser(struct arg_parse * result,int argc,char ** argv){
+    for(int i=0;i<48;i++) result->options[i]=0;
+    for(int i=1;i<argc;i++){
+        if(argv[i][0]=='-'){
+            for(int j=1;j<strlen(argv[i]);j++){
+                int index=letter_mapping(argv[i][j]);
+                if(index==-1){
+                    cerr<<"不支持的选项："<<argv[i][j]<<endl;
+                    return -1;
+                }
+                result->options[index]=1;
+            }
+        }
+        else{
+            result->args.push_back(string(argv[i]));
+        }
+    }
+    return 0;
+}

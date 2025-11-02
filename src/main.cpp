@@ -190,6 +190,9 @@ int main(int argc, char**argv){
                     setenv("COMMAND_PATH",command_path,1);
                     break;
                 }
+                else if(command=="exit"){
+                    exit(0);
+                }
                 else
                     pid=Fork();
                 
@@ -221,9 +224,6 @@ int main(int argc, char**argv){
                     exit(0);
                 }
 
-                else if(command=="exit"){
-                    exit(-2);
-                }
 
                 else if(command=="pwd"){
                     char pwd_buffer[BUFFER_SIZE];
@@ -308,9 +308,7 @@ int main(int argc, char**argv){
         for(int i=0;i<command_count;i++){
             if(!is_back_ground[i])
                 waitpid(pids[i],&status,0);
-            if(WEXITSTATUS(status)==-2){
-                exit_flag=true;
-            }
+            
         }
         Tcsetpgrp(STDIN_FILENO,getpgid(0));
         free(pids);
