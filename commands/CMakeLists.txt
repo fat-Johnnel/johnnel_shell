@@ -10,8 +10,9 @@ add_subdirectory(touch_cmd)
 add_subdirectory(mkdir_cmd)
 add_subdirectory(cp_cmd)
 add_subdirectory(rm_cmd)
-
+add_subdirectory(mv_cmd)
 
 
 target_include_directories(cp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(rm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(mv PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

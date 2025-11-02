@@ -36,6 +36,7 @@ install(TARGETS
     mkdir
     cp
     rm
+    mv
     DESTINATION ${INSTALL_BIN_DIR}/commands
 )
 
