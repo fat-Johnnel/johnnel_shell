@@ -1,20 +1,55 @@
 #include "build_in.h"
 
-pid_t shell_pid;
-
 using namespace std;
+
+pid_t shell_pid;
+char current_path[BUFFER_SIZE];
+char command_path[BUFFER_SIZE];
+char username[BUFFER_SIZE];
+char hostname[BUFFER_SIZE];
+char *home_path;
+char * reader;
+struct passwd * pw;
+vector<string> path_list;
+
+
+void load_command_path(){
+    strcpy(command_path,getenv("COMMAND_PATH"));
+    int index=0;
+    path_list.clear();
+    for(int i=0;i<strlen(command_path);i++){
+        if(command_path[i]==':'){
+            path_list.push_back(string(command_path+index,command_path+i));
+            index=i+1;
+        }
+    }
+    path_list.push_back(string(command_path+index,command_path+strlen(command_path)));
+}
+
+void print_header(){
+    string current_time=gettime();
+    getcwd(current_path,BUFFER_SIZE);
+    home_to_wavy(current_path);
+    printf("\033[34m%s\033[39m@\033[34m%s\033[39m \033[33m%s\033[39m %s \033[92m$>\033[39m",username,hostname,current_path,current_time.c_str());
+}
+
+int reader_is_empty(const string & r){
+    for(auto it:r){
+        if(!isspace(it)){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
 int main(int argc, char**argv){
     //>>>>>>>>>>>>>>>>>>>>>>>>>initilize<<<<<<<<<<<<<<<<<<<<<<
-    char *reader;
-    char current_path[BUFFER_SIZE];
-    char command_path[BUFFER_SIZE];
     strcpy(command_path,COMMAND_PATH);
     setenv("COMMAND_PATH",command_path,1);
     shell_pid=getpid();
-    char username[BUFFER_SIZE];
-    char hostname[BUFFER_SIZE];
     getlogin_r(username,BUFFER_SIZE);
-    struct passwd * pw=getpwuid(getuid());
+    pw=getpwuid(getuid());
     if(pw!=NULL){
         strcpy(username,pw->pw_name);
     }
@@ -29,30 +64,28 @@ int main(int argc, char**argv){
     Signal(SIGINT,SIG_IGN);
     Signal(SIGTTOU, SIG_IGN);
     while(true){
-        strcpy(command_path,getenv("COMMAND_PATH"));
-        int index=0;
-        vector<string> path_list;
-        for(int i=0;i<strlen(command_path);i++){
-            if(command_path[i]==':'){
-                path_list.push_back(string(command_path+index,command_path+i));
-                index=i+1;
-            }
-        }
-        path_list.push_back(string(command_path+index,command_path+strlen(command_path)));
 
-        string current_time=gettime();
-        getcwd(current_path,BUFFER_SIZE);
-        printf("%s@%s %s %s ",username,hostname,current_path,current_time.c_str());
-        if((reader=readline("$ "))==NULL)
+        home_path=getenv("HOME");
+
+        load_command_path();
+        
+        print_header();
+
+        if((reader=readline(" "))==NULL)
         {
             break;
+        }
+        string reader_str(reader);
+        free(reader);
+
+
+        if(reader_is_empty(reader_str)){
+            continue;
         }
 
         //管道切分
         vector<stringstream> pcommands;
         int command_count=1;
-        string reader_str(reader);
-        free(reader);
         string::iterator pre=reader_str.begin();
         string::iterator it=reader_str.begin();
         while(it!=reader_str.end()){
@@ -66,6 +99,10 @@ int main(int argc, char**argv){
         }
         string one_command(pre,it);
         pcommands.push_back(stringstream(one_command));
+
+        if(command_count==0){
+            continue;
+        }
         pid_t * pids=(pid_t*)malloc(sizeof(pid_t)*command_count);
 
         //重定向检查

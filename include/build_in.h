@@ -1,6 +1,6 @@
 #ifndef BUILD_IN_H
 #define BUILD_IN_H
-#define COMMAND_PATH "/home/johnnel-wsl/codes/SimpleShell/bin/commands"
+#define COMMAND_PATH "/home/Johnu/codes/johnnel_shell/bin/commands"
 /*
 echo
 exit
@@ -47,4 +47,8 @@ int Stat(const char *pathname, struct stat *statbuf);
 int arg_parser(struct arg_parse * result,int argc,char **argv);
 int letter_mapping(char c);
 char demapping_letter(int index);
+void wavy_to_home(char * path);
+void wavy_to_home(std::string & path);
+void home_to_wavy(char * path);
+void home_to_wavy(std::string & path);
 #endif

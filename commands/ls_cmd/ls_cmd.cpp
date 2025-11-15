@@ -75,7 +75,18 @@ int main(int argc, char**argv){
             cout<<"\t"<<dp->d_name<<endl;
         }
         else{
-            cout<<dp->d_name<<"\t";
+            struct stat st;
+            string full_path=string(dest_path)+"/"+string(dp->d_name);
+            if(stat(full_path.c_str(),&st)<0){
+                cerr<<"cannot access file: "<<full_path<<endl;
+                continue;
+            }
+            if(S_ISDIR(st.st_mode)){
+                cout<<"\033[34m"<<dp->d_name<<"\033[39m/   ";
+            }
+            else{
+                cout<<dp->d_name<<"   ";
+            }
         }
     }
     cout <<endl;

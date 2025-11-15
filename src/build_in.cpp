@@ -1,5 +1,43 @@
 #include "build_in.h"
 using namespace std;
+
+void wavy_to_home(char * path){
+    char *home_path=getenv("HOME");
+    char buffer[BUFFER_SIZE];
+    if(path[0]=='~'){
+        strcpy(buffer,home_path);
+        strcat(buffer,path+1);
+        strcpy(path,buffer);
+    }
+}
+
+void wavy_to_home(string & path){
+    char *home_path=getenv("HOME");
+    if(path[0]=='~'){
+        path=string(home_path)+path.substr(1);
+    }
+}
+
+void home_to_wavy(char * path){
+    char buffer[BUFFER_SIZE];
+    char *home_path=getenv("HOME");
+    size_t home_len=strlen(home_path);
+    if(strncmp(path,home_path,home_len)==0){
+        buffer[0]='~';
+        strcpy(buffer+1,path+home_len);
+        strcpy(path,buffer);
+    }
+}
+
+void home_to_wavy(std::string & path){
+    char *home_path=getenv("HOME");
+    size_t home_len=strlen(home_path);
+    if(path.substr(0,home_len)==string(home_path)){
+        path="~"+path.substr(home_len);
+    }
+}
+
+
 void echo_command(string args){
     //不要修改args
     auto it=args.begin();
