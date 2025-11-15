@@ -13,19 +13,6 @@ struct passwd * pw;
 vector<string> path_list;
 
 
-void load_command_path(){
-    strcpy(command_path,getenv("COMMAND_PATH"));
-    int index=0;
-    path_list.clear();
-    for(int i=0;i<strlen(command_path);i++){
-        if(command_path[i]==':'){
-            path_list.push_back(string(command_path+index,command_path+i));
-            index=i+1;
-        }
-    }
-    path_list.push_back(string(command_path+index,command_path+strlen(command_path)));
-}
-
 void print_header(){
     string current_time=gettime();
     getcwd(current_path,BUFFER_SIZE);
@@ -67,7 +54,7 @@ int main(int argc, char**argv){
 
         home_path=getenv("HOME");
 
-        load_command_path();
+        load_command_path(command_path,path_list);
         
         print_header();
 

@@ -51,4 +51,5 @@ void wavy_to_home(char * path);
 void wavy_to_home(std::string & path);
 void home_to_wavy(char * path);
 void home_to_wavy(std::string & path);
+void load_command_path(char *,std::vector<std::string> &);
 #endif

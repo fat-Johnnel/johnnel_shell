@@ -201,3 +201,16 @@ int arg_parser(struct arg_parse * result,int argc,char ** argv){
     }
     return 0;
 }
+
+void load_command_path(char * command_path,vector<string> & path_list){
+    strcpy(command_path,getenv("COMMAND_PATH"));
+    int index=0;
+    path_list.clear();
+    for(int i=0;i<strlen(command_path);i++){
+        if(command_path[i]==':'){
+            path_list.push_back(string(command_path+index,command_path+i));
+            index=i+1;
+        }
+    }
+    path_list.push_back(string(command_path+index,command_path+strlen(command_path)));
+}
