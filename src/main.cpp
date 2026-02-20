@@ -17,7 +17,8 @@ void print_header(){
     string current_time=gettime();
     getcwd(current_path,BUFFER_SIZE);
     home_to_wavy(current_path);
-    printf("\033[34m%s\033[39m@\033[34m%s\033[39m \033[33m%s\033[39m %s \033[92m$>\033[39m",username,hostname,current_path,current_time.c_str());
+    printf("\033[34m%s\033[39m@\033[34m%s\033[39m \033[33m%s\033[39m %s \033[92m$>\033[39m",\
+        username,hostname,current_path,current_time.c_str());
 }
 
 int reader_is_empty(const string & r){
@@ -216,6 +217,11 @@ int main(int argc, char**argv){
                 }
                 else if(command=="exit"){
                     exit(0);
+                }
+                else if(command=="EXPORT"){
+                    string new_path=string(getenv("COMMAND_PATH"))+":/usr/bin";
+                    setenv("COMMAND_PATH",new_path.c_str(),1);
+                    break;
                 }
                 else
                     pid=Fork();
