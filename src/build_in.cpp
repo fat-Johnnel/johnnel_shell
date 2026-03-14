@@ -106,10 +106,12 @@ sighandler_t Signal(int signum, sighandler_t handler){
 }
 
 int Tcsetpgrp(int fd,pid_t pgrp){
-    int rc;
-    if((rc=tcsetpgrp(fd,pgrp))<0){
-        cerr<<"终端控制权转移失败"<<endl;
-        exit(1);
+    int rc = 0;
+    if(isatty(fd)){
+        if((rc=tcsetpgrp(fd,pgrp))<0){
+            cerr<<"终端控制权转移失败"<<endl;
+            exit(1);
+        }
     }
     return rc;
 }
@@ -214,3 +216,60 @@ void load_command_path(char * command_path,vector<string> & path_list){
     }
     path_list.push_back(string(command_path+index,command_path+strlen(command_path)));
 }
+
+vector<Job> job_list;
+
+void add_job(pid_t pid, pid_t pgid, string command, bool is_background) {
+    Job job;
+    job.pid = pid;
+    job.pgid = pgid;
+    job.command = command;
+    job.status = "Running";
+    job.is_background = is_background;
+    job_list.push_back(job);
+}
+
+void remove_job(pid_t pid) {
+    for (auto it = job_list.begin(); it != job_list.end(); ++it) {
+        if (it->pid == pid) {
+            job_list.erase(it);
+            break;
+        }
+    }
+}
+
+void print_jobs() {
+    for (size_t i = 0; i < job_list.size(); ++i) {
+        cout << "[" << i + 1 << "] " << job_list[i].pid << " " << job_list[i].status << " " << job_list[i].command << endl;
+    }
+}
+
+void update_jobs() {
+    int status;
+    pid_t pid;
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        remove_job(pid);
+    }
+}
+
+int kill_cmd(vector<string> args) {
+    if (args.empty()) {
+        cerr << "kill: usage: kill <pid>" << endl;
+        return 1;
+    }
+    try {
+        pid_t pid = stoi(args[0]);
+        if (kill(pid, SIGTERM) < 0) {
+            perror("kill");
+            return 1;
+        }
+        remove_job(pid);
+    } catch (...) {
+        cerr << "kill: invalid pid: " << args[0] << endl;
+        return 1;
+    }
+    return 0;
+}
+
+
+

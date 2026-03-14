@@ -12,7 +12,17 @@ char * reader;
 struct passwd * pw;
 vector<string> path_list;
 
-
+/*
+主循环：main_loop()
+    1. 打印提示符
+    2. 读取输入
+    3. 解析输入
+    4. 执行命令
+解析输入需要实现的功能：
+    1. 管道切分
+    2. 重定向检查
+    3. 后台运行检查
+*/
 void print_header(){
     string current_time=gettime();
     getcwd(current_path,BUFFER_SIZE);
@@ -29,6 +39,8 @@ int reader_is_empty(const string & r){
     }
     return 1;
 }
+
+
 
 
 int main(int argc, char**argv){
@@ -56,6 +68,8 @@ int main(int argc, char**argv){
         home_path=getenv("HOME");
 
         load_command_path(command_path,path_list);
+        
+        update_jobs();
         
         print_header();
 
@@ -223,6 +237,17 @@ int main(int argc, char**argv){
                     setenv("COMMAND_PATH",new_path.c_str(),1);
                     break;
                 }
+                else if(command=="jobs"){
+                    print_jobs();
+                    break;
+                }
+                else if(command=="kill"){
+                    vector<string> args;
+                    string arg;
+                    while(ss >> arg) args.push_back(arg);
+                    kill_cmd(args);
+                    break;
+                }
                 else
                     pid=Fork();
                 
@@ -325,6 +350,7 @@ int main(int argc, char**argv){
                         back_gpid=pid;
                     }
                     setpgid(pid,back_gpid);
+                    add_job(pid, back_gpid, pcommands[i-1].str(), true);
                 }
                 pids[i-1]=pid;
                 

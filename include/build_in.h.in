@@ -35,6 +35,20 @@ struct arg_parse{
     std::vector<std::string> args;
 };
 
+struct Job {
+    pid_t pid;
+    pid_t pgid;
+    std::string command;
+    std::string status;
+    bool is_background;
+};
+
+void add_job(pid_t pid, pid_t pgid, std::string command, bool is_background);
+void remove_job(pid_t pid);
+void print_jobs();
+void update_jobs();
+int kill_cmd(std::vector<std::string> args);
+
 
 void echo_command(std::string args);
 pid_t Fork(void);
